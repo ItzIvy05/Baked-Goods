@@ -1,6 +1,8 @@
 #include "AnimalWitness.h"
 #include "Aurora.h"
+#include "FollowerLockpick.h"
 #include "LingeringSubtitle.h"
+#include "MurderReport.h"
 #include "RaceMenuCommand.h"
 #include "RegionWeather.h"
 
@@ -21,6 +23,8 @@ namespace
     REX::INI::Bool<> animalWitnessFix{ "Features", "bAnimalWitnessFix", true };
     REX::INI::Bool<> disableShowRaceMenu{ "Features", "bDisableShowRaceMenu", true };
     REX::INI::Bool<> auroraFix{ "Features", "bAuroraFix", true };
+    REX::INI::Bool<> murderReportFix{ "Features", "bMurderReportFix", true };
+    REX::INI::Bool<> followerLockpickFix{ "Features", "bFollowerLockpickFix", true };
 
     std::vector<std::string_view> FindLoaded(std::span<const std::string_view> a_dlls)
     {
@@ -73,7 +77,7 @@ namespace
         if (a_message->type == SKSE::MessagingInterface::kPostLoad) {
             CheckLoadedDlls();
             const auto ini = REX::INI::SettingStore::GetSingleton();
-            ini->Init("Data/SKSE/Plugins/BakedGoods.ini", "");
+            ini->Init("Data/SKSE/Plugins/BakedGoods.ini", "Data/SKSE/Plugins/BakedGoods_Custom.ini");
             ini->Load();
             if (regionWeatherFix.GetValue()) {
                 RegionWeather::Install();
@@ -90,13 +94,19 @@ namespace
             if (auroraFix.GetValue()) {
                 Aurora::Install();
             }
+            if (murderReportFix.GetValue()) {
+                MurderReport::Install();
+            }
+            if (followerLockpickFix.GetValue()) {
+                FollowerLockpick::Install();
+            }
         }
     }
 }
 
 SKSEPluginLoad(const SKSE::LoadInterface* skse)
 {
-    SKSE::Init(skse, { .trampoline = true, .trampolineSize = 56 });
+    SKSE::Init(skse, { .trampoline = true, .trampolineSize = 70 });
     SKSE::GetMessagingInterface()->RegisterListener(OnMessage);
     return true;
 }
