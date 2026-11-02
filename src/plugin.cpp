@@ -21,11 +21,11 @@ namespace
 
     REX::INI::Bool<> regionWeatherFix{ "Features", "bRegionWeatherFix", true };
     REX::INI::Bool<> lingeringSubtitleFix{ "Features", "bLingeringSubtitleFix", true };
-    REX::INI::Bool<> animalWitnessFix{ "Features", "bAnimalWitnessFix", true };
+    REX::INI::Bool<> animalWitnessFix{ "Stealth Fixes", "bAnimalWitnessFix", true };
     REX::INI::Bool<> disableShowRaceMenu{ "Features", "bDisableShowRaceMenu", true };
     REX::INI::Bool<> auroraFix{ "Features", "bAuroraFix", true };
-    REX::INI::Bool<> murderReportFix{ "Features", "bMurderReportFix", true };
-    REX::INI::Bool<> followerLockpickFix{ "Features", "bFollowerLockpickFix", true };
+    REX::INI::Bool<> murderReportFix{ "Stealth Fixes", "bMurderReportFix", true };
+    REX::INI::Bool<> followerLockpickFix{ "Stealth Fixes", "bFollowerLockpickFix", true };
     REX::INI::Bool<> arrowImpactFix{ "Stealth Fixes", "bArrowImpactFix", true };
 
     std::vector<std::string_view> FindLoaded(std::span<const std::string_view> a_dlls)
