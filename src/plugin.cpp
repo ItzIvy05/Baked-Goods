@@ -22,7 +22,7 @@ namespace
     REX::INI::Bool<> regionWeatherFix{ "Features", "bRegionWeatherFix", true };
     REX::INI::Bool<> lingeringSubtitleFix{ "Features", "bLingeringSubtitleFix", true };
     REX::INI::Bool<> animalWitnessFix{ "Stealth Fixes", "bAnimalWitnessFix", true };
-    REX::INI::Bool<> disableShowRaceMenu{ "Features", "bDisableShowRaceMenu", true };
+    REX::INI::Bool<> disableShowRaceMenu{ "Features", "bDisableShowRaceMenu", false };
     REX::INI::Bool<> auroraFix{ "Features", "bAuroraFix", true };
     REX::INI::Bool<> murderReportFix{ "Stealth Fixes", "bMurderReportFix", true };
     REX::INI::Bool<> followerLockpickFix{ "Stealth Fixes", "bFollowerLockpickFix", true };
