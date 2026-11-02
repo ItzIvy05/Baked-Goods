@@ -1,4 +1,5 @@
 #include "AnimalWitness.h"
+#include "ArrowImpacts.h"
 #include "Aurora.h"
 #include "FollowerLockpick.h"
 #include "LingeringSubtitle.h"
@@ -25,6 +26,7 @@ namespace
     REX::INI::Bool<> auroraFix{ "Features", "bAuroraFix", true };
     REX::INI::Bool<> murderReportFix{ "Features", "bMurderReportFix", true };
     REX::INI::Bool<> followerLockpickFix{ "Features", "bFollowerLockpickFix", true };
+    REX::INI::Bool<> arrowImpactFix{ "Stealth Fixes", "bArrowImpactFix", true };
 
     std::vector<std::string_view> FindLoaded(std::span<const std::string_view> a_dlls)
     {
@@ -99,6 +101,11 @@ namespace
             }
             if (followerLockpickFix.GetValue()) {
                 FollowerLockpick::Install();
+            }
+        }
+        if (a_message->type == SKSE::MessagingInterface::kDataLoaded) {
+            if (arrowImpactFix.GetValue()) {
+                ArrowImpacts::Install();
             }
         }
     }
