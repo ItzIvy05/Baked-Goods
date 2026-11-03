@@ -1,6 +1,8 @@
+#include "ActionNoise.h"
 #include "AnimalWitness.h"
 #include "ArrowImpacts.h"
 #include "Aurora.h"
+#include "DetectionDistance.h"
 #include "FollowerLockpick.h"
 #include "LingeringSubtitle.h"
 #include "MurderReport.h"
@@ -27,6 +29,8 @@ namespace
     REX::INI::Bool<> murderReportFix{ "Stealth Fixes", "bMurderReportFix", true };
     REX::INI::Bool<> followerLockpickFix{ "Stealth Fixes", "bFollowerLockpickFix", true };
     REX::INI::Bool<> arrowImpactFix{ "Stealth Fixes", "bArrowImpactFix", true };
+    REX::INI::Bool<> detectionDistanceFix{ "Stealth Fixes", "bDetectionDistanceFix", true };
+    REX::INI::Bool<> actionNoiseFix{ "Stealth Fixes", "bActionNoiseFix", true };
 
     std::vector<std::string_view> FindLoaded(std::span<const std::string_view> a_dlls)
     {
@@ -101,6 +105,12 @@ namespace
             }
             if (followerLockpickFix.GetValue()) {
                 FollowerLockpick::Install();
+            }
+            if (detectionDistanceFix.GetValue()) {
+                DetectionDistance::Install();
+            }
+            if (actionNoiseFix.GetValue()) {
+                ActionNoise::Install();
             }
         }
         if (a_message->type == SKSE::MessagingInterface::kDataLoaded) {
