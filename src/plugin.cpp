@@ -6,8 +6,10 @@
 #include "FollowerLockpick.h"
 #include "LingeringSubtitle.h"
 #include "MurderReport.h"
+#include "Music.h"
 #include "RaceMenuCommand.h"
 #include "RegionWeather.h"
+#include "SneakSpellLight.h"
 
 namespace
 {
@@ -26,11 +28,13 @@ namespace
     REX::INI::Bool<> animalWitnessFix{ "Stealth Fixes", "bAnimalWitnessFix", true };
     REX::INI::Bool<> disableShowRaceMenu{ "Features", "bDisableShowRaceMenu", false };
     REX::INI::Bool<> auroraFix{ "Features", "bAuroraFix", true };
+    REX::INI::Bool<> musicFix{ "Features", "bMusicFix", true };
     REX::INI::Bool<> murderReportFix{ "Stealth Fixes", "bMurderReportFix", true };
     REX::INI::Bool<> followerLockpickFix{ "Stealth Fixes", "bFollowerLockpickFix", true };
     REX::INI::Bool<> arrowImpactFix{ "Stealth Fixes", "bArrowImpactFix", true };
     REX::INI::Bool<> detectionDistanceFix{ "Stealth Fixes", "bDetectionDistanceFix", true };
     REX::INI::Bool<> actionNoiseFix{ "Stealth Fixes", "bActionNoiseFix", true };
+    REX::INI::Bool<> sneakSpellLightFix{ "Stealth Fixes", "bSneakSpellLightFix", true };
 
     std::vector<std::string_view> FindLoaded(std::span<const std::string_view> a_dlls)
     {
@@ -100,6 +104,9 @@ namespace
             if (auroraFix.GetValue()) {
                 Aurora::Install();
             }
+            if (musicFix.GetValue() && !REX::W32::GetModuleHandleA("CombatMusicFixNG.dll") && !REX::W32::GetModuleHandleA("MusicQueueFix.dll")) {
+                Music::Install();
+            }
             if (murderReportFix.GetValue()) {
                 MurderReport::Install();
             }
@@ -112,6 +119,9 @@ namespace
             if (actionNoiseFix.GetValue()) {
                 ActionNoise::Install();
             }
+            if (sneakSpellLightFix.GetValue() && !REX::W32::GetModuleHandleA("Illuminated.dll")) {  // Illuminated fades spell lights while sneaking
+                SneakSpellLight::Install();
+            }
         }
         if (a_message->type == SKSE::MessagingInterface::kDataLoaded) {
             if (arrowImpactFix.GetValue()) {
@@ -123,7 +133,7 @@ namespace
 
 SKSEPluginLoad(const SKSE::LoadInterface* skse)
 {
-    SKSE::Init(skse, { .trampoline = true, .trampolineSize = 70 });
+    SKSE::Init(skse, { .trampoline = true, .trampolineSize = 112 });
     SKSE::GetMessagingInterface()->RegisterListener(OnMessage);
     return true;
 }
