@@ -1,13 +1,6 @@
 #include "SneakSpellLight.h"
 
 namespace {
-    using CreateObject_t = RE::NiObject*();
-    REL::Relocation<CreateObject_t> CreateDimmer{RELOCATION_ID(72049, 73695)};             // NiLightDimmerController::CreateObject
-    REL::Relocation<CreateObject_t> CreateFloatInterpolator{RELOCATION_ID(71088, 72686)};  // NiFloatInterpolator::CreateObject
-    REL::Relocation<CreateObject_t> CreateFloatData{RELOCATION_ID(71069, 72667)};          // NiFloatData::CreateObject
-    REL::Relocation<RE::NiFloatKey*(std::uint32_t)> CreateLinearKeys{RELOCATION_ID(72540, 74222)};                                                  // NiLinFloatKey array
-    REL::Relocation<void(RE::NiFloatData*, RE::NiFloatKey*, std::uint32_t, RE::NiFloatData::KeyType)> ReplaceAnim{RELOCATION_ID(71071, 72669)};  // NiFloatData::ReplaceAnim
-
     constexpr float fadeTime = 0.3f;
 
     RE::NiFloatKey* GetFadeKeys(RE::NiTimeController* a_controller) {
@@ -19,10 +12,10 @@ namespace {
     }
 
     RE::NiTimeController* CreateFade(RE::NiLight* a_light) {
-        const auto dimmer = static_cast<RE::NiInterpController*>(CreateDimmer());
-        const auto interpolator = static_cast<RE::NiFloatInterpolator*>(CreateFloatInterpolator());
-        const auto data = static_cast<RE::NiFloatData*>(CreateFloatData());
-        ReplaceAnim(data, CreateLinearKeys(2), 2, RE::NiFloatData::KeyType::kLink);
+        const auto dimmer = RE::NiLightDimmerController::Create();
+        const auto interpolator = RE::NiFloatInterpolator::Create();
+        const auto data = RE::NiFloatData::Create();
+        data->ReplaceAnim(RE::NiLinFloatKey::CreateArray(2), 2, RE::NiFloatData::KeyType::kLink);
         interpolator->floatData.reset(data);
         dimmer->SetInterpolator(interpolator, 0);
         dimmer->flags.set(RE::NiTimeController::Flag::kAnimType_AppInit, RE::NiTimeController::Flag::kCycleType_Clamp, RE::NiTimeController::Flag::kComputeScaledTime);
