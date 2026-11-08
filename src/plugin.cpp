@@ -4,9 +4,11 @@
 #include "Aurora.h"
 #include "DetectionDistance.h"
 #include "FollowerLockpick.h"
+#include "KeyboardData.h"
 #include "LingeringSubtitle.h"
 #include "MurderReport.h"
 #include "Music.h"
+#include "QueuedCell.h"
 #include "RaceMenuCommand.h"
 #include "RegionWeather.h"
 #include "SneakSpellLight.h"
@@ -35,6 +37,8 @@ namespace
     REX::INI::Bool<> detectionDistanceFix{ "Stealth Fixes", "bDetectionDistanceFix", true };
     REX::INI::Bool<> actionNoiseFix{ "Stealth Fixes", "bActionNoiseFix", true };
     REX::INI::Bool<> sneakSpellLightFix{ "Stealth Fixes", "bSneakSpellLightFix", true };
+    REX::INI::Bool<> queued3DCellFix{ "Crash Fixes", "bQueued3DCellFix", true };
+    REX::INI::Bool<> keyboardDataFix{ "Crash Fixes", "bKeyboardDataFix", true };
 
     std::vector<std::string_view> FindLoaded(std::span<const std::string_view> a_dlls)
     {
@@ -122,6 +126,12 @@ namespace
             if (sneakSpellLightFix.GetValue() && !REX::W32::GetModuleHandleA("Illuminated.dll")) {  // Illuminated fades spell lights while sneaking
                 SneakSpellLight::Install();
             }
+            if (queued3DCellFix.GetValue()) {
+                QueuedCell::Install();
+            }
+            if (keyboardDataFix.GetValue()) {
+                KeyboardData::Install();
+            }
         }
         if (a_message->type == SKSE::MessagingInterface::kDataLoaded) {
             if (arrowImpactFix.GetValue()) {
@@ -133,7 +143,7 @@ namespace
 
 SKSEPluginLoad(const SKSE::LoadInterface* skse)
 {
-    SKSE::Init(skse, { .trampoline = true, .trampolineSize = 112 });
+    SKSE::Init(skse, { .trampoline = true, .trampolineSize = 140 });
     SKSE::GetMessagingInterface()->RegisterListener(OnMessage);
     return true;
 }
