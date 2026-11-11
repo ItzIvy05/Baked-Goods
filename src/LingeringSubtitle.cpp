@@ -38,6 +38,29 @@ namespace
         }
         static inline REL::Relocation<decltype(thunk)> func;
     };
+
+    // a scene that ends mid line never finishes a non-actor speaker's line, so its subtitle stays
+    struct EndDialogue
+    {
+        static void thunk(RE::BGSSceneActionDialogue* a_this, RE::BGSScene* a_scene)
+        {
+            const bool unfinished = (a_this->unk14 & 1) != 0 && (a_this->unk14 & 2) == 0;
+            func(a_this, a_scene);
+            if (!unfinished) {
+                return;
+            }
+            const auto ref = a_scene->parentQuest->GetAliasedRef(a_this->actorID).get();
+            if (!ref || ref->Is(RE::FormType::ActorCharacter)) {
+                return;
+            }
+            const auto info = ref->extraList.GetByType<RE::ExtraSayToTopicInfo>();
+            if (info && !info->voicePaused) {
+                info->voicePaused = true;
+                ref->UpdateSoundCallBack(false);
+            }
+        }
+        static inline REL::Relocation<decltype(thunk)> func;
+    };
 }
 
 namespace LingeringSubtitle
@@ -48,5 +71,7 @@ namespace LingeringSubtitle
         MovetoLow::func = vtbl.write_vfunc(0xF2, MovetoLow::thunk);  // Character::MovetoLow
         MovetoMiddleLow::func = vtbl.write_vfunc(0xF3, MovetoMiddleLow::thunk);  // Character::MovetoMiddleLow
         StopCurrentDialogue::func = vtbl.write_vfunc(0x4F, StopCurrentDialogue::thunk);  // Character::StopCurrentDialogue
+        REL::Relocation<std::uintptr_t> dialogueVtbl{ RE::VTABLE_BGSSceneActionDialogue[0] };
+        EndDialogue::func = dialogueVtbl.write_vfunc(0x11, EndDialogue::thunk);  // BGSSceneActionDialogue::End
     }
 }
