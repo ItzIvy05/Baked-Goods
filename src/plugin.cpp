@@ -14,6 +14,7 @@
 #include "RegionWeather.h"
 #include "SneakSpellLight.h"
 #include "WarpToLocation.h"
+#include "WornEnchantment.h"
 
 namespace {
     constexpr std::array merged{
@@ -28,6 +29,7 @@ namespace {
     REX::INI::Bool<> disableShowRaceMenu{"Features", "bDisableShowRaceMenu", false};
     REX::INI::Bool<> auroraFix{"Features", "bAuroraFix", true};
     REX::INI::Bool<> musicFix{"Features", "bMusicFix", true};
+    REX::INI::Bool<> wornEnchantmentFix{"Features", "bWornEnchantmentFix", true};
     REX::INI::Bool<> murderReportFix{"Stealth Fixes", "bMurderReportFix", true};
     REX::INI::Bool<> followerLockpickFix{"Stealth Fixes", "bFollowerLockpickFix", true};
     REX::INI::Bool<> arrowImpactFix{"Stealth Fixes", "bArrowImpactFix", true};
@@ -167,6 +169,9 @@ namespace {
             if (musicFix.GetValue() && !REX::W32::GetModuleHandleA("CombatMusicFixNG.dll") && !REX::W32::GetModuleHandleA("MusicQueueFix.dll")) {
                 Music::Install();
             }
+            if (wornEnchantmentFix.GetValue()) {
+                WornEnchantment::Install();
+            }
             if (murderReportFix.GetValue()) {
                 MurderReport::Install();
             }
@@ -204,7 +209,7 @@ namespace {
 }
 
 SKSEPluginLoad(const SKSE::LoadInterface* skse) {
-    SKSE::Init(skse, {.trampoline = true, .trampolineSize = 154});
+    SKSE::Init(skse, {.trampoline = true, .trampolineSize = 168});
     SKSE::GetMessagingInterface()->RegisterListener(OnMessage);
     return true;
 }

@@ -35,10 +35,26 @@ namespace
                     if (a_this->flags.any(RE::BSIMusicType::MST::kPlaysOver)) {
                         other->DoApplyDuckingAttenuation(a_this->ducksOtherMusicBy);
                     } else {
-                        other->DoFinish(a_this->flags.any(RE::BSIMusicType::MST::kAbruptTransition));
+                        other->DoFinish(true);
                     }
                 }
             }
+        }
+        static inline REL::Relocation<decltype(thunk)> func;
+    };
+
+    // the type drops the immediate flag, so a track nothing updates again plays to its end
+    struct DoFinish
+    {
+        static void thunk(RE::BSIMusicType* a_this, bool a_immediate)
+        {
+            if (!a_immediate) {
+                func(a_this, a_immediate);
+                return;
+            }
+            const auto track = a_this->tracks[a_this->currentTrackIndex];
+            track->DoFinish(true, a_this->fadeTime);
+            a_this->typeStatus = static_cast<RE::BSIMusicType::MUSIC_STATUS>(std::to_underlying(track->GetMusicStatus()));
         }
         static inline REL::Relocation<decltype(thunk)> func;
     };
@@ -52,5 +68,6 @@ namespace Music
         ProcessEvent::func = manager.write_vfunc(0x1, ProcessEvent::thunk);  // BSMusicManager::ProcessEvent
         REL::Relocation<std::uintptr_t> type{ RE::VTABLE_BGSMusicType[1] };
         DoClearDucking::func = type.write_vfunc(0x5, DoClearDucking::thunk);  // BGSMusicType::DoClearDucking
+        DoFinish::func = type.write_vfunc(0x3, DoFinish::thunk);  // BGSMusicType::DoFinish
     }
 }
