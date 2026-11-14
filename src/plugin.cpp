@@ -184,7 +184,7 @@ namespace {
             if (actionNoiseFix.GetValue()) {
                 ActionNoise::Install();
             }
-            if (sneakSpellLightFix.GetValue() && !REX::W32::GetModuleHandleA("Illuminated.dll")) {  // Illuminated fades spell lights while sneaking
+            if (sneakSpellLightFix.GetValue()) {
                 SneakSpellLight::Install();
             }
             if (queued3DCellFix.GetValue()) {
