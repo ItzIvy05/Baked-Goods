@@ -1,3 +1,3 @@
 # Baked Goods
 
-### [Baked Goods Document](https://github.com/ItzIvy05/Baked-Goods/wiki/)
+### [Baked Goods Documentations](https://github.com/ItzIvy05/Baked-Goods/wiki/)
