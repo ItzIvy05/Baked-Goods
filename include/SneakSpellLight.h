@@ -2,5 +2,5 @@
 
 namespace SneakSpellLight
 {
-    void Install();
+    void Install(bool a_vampireNoLight);
 }

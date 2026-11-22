@@ -13,6 +13,7 @@
 #include "RaceMenuCommand.h"
 #include "RegionWeather.h"
 #include "SneakSpellLight.h"
+#include "TrapListener.h"
 #include "WarpToLocation.h"
 #include "WornEnchantment.h"
 
@@ -36,10 +37,12 @@ namespace {
     REX::INI::Bool<> detectionDistanceFix{"Stealth Fixes", "bDetectionDistanceFix", true};
     REX::INI::Bool<> actionNoiseFix{"Stealth Fixes", "bActionNoiseFix", true};
     REX::INI::Bool<> sneakSpellLightFix{"Stealth Fixes", "bSneakSpellLightFix", true};
+    REX::INI::Bool<> vampireNoSpellLight{"Stealth Fixes", "bVampireNoSpellLight", false};
     REX::INI::Bool<> queued3DCellFix{"Crash Fixes", "bQueued3DCellFix", true};
     REX::INI::Bool<> keyboardDataFix{"Crash Fixes", "bKeyboardDataFix", true};
     REX::INI::Bool<> actorValueCacheFix{"Crash Fixes", "bActorValueCacheFix", true};
     REX::INI::Bool<> warpToLocationFix{"Crash Fixes", "bWarpToLocationFix", true};
+    REX::INI::Bool<> trapListenerFix{"Crash Fixes", "bTrapListenerFix", true};
 
     struct StealthFixesClash {
         const REX::INI::Bool<>& ours;
@@ -185,7 +188,7 @@ namespace {
                 ActionNoise::Install();
             }
             if (sneakSpellLightFix.GetValue()) {
-                SneakSpellLight::Install();
+                SneakSpellLight::Install(vampireNoSpellLight.GetValue());
             }
             if (queued3DCellFix.GetValue()) {
                 QueuedCell::Install();
@@ -199,6 +202,9 @@ namespace {
             if (warpToLocationFix.GetValue()) {
                 WarpToLocation::Install();
             }
+            if (trapListenerFix.GetValue()) {
+                TrapListener::Install();
+            }
         }
         if (a_message->type == SKSE::MessagingInterface::kDataLoaded) {
             if (arrowImpactFix.GetValue()) {
@@ -209,7 +215,7 @@ namespace {
 }
 
 SKSEPluginLoad(const SKSE::LoadInterface* skse) {
-    SKSE::Init(skse, {.trampoline = true, .trampolineSize = 168});
+    SKSE::Init(skse, {.trampoline = true, .trampolineSize = 210});
     SKSE::GetMessagingInterface()->RegisterListener(OnMessage);
     return true;
 }

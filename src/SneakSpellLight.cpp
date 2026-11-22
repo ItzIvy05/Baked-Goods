@@ -2,6 +2,11 @@
 
 namespace {
     constexpr float fadeTime = 0.3f;
+    bool vampireNoLight = false;
+
+    bool IsHiddenVampire(const RE::Actor* a_actor) {
+        return vampireNoLight && a_actor->HasKeywordWithType(RE::DefaultObjectID::kKeywordVampire);
+    }
 
     RE::NiFloatKey* GetFadeKeys(RE::NiTimeController* a_controller) {
         const auto interpolator = netimmerse_cast<RE::NiFloatInterpolator*>(static_cast<RE::NiInterpController*>(a_controller)->GetInterpolator(0));
@@ -56,7 +61,7 @@ namespace {
                 continue;
             }
             const auto light = caster->light->light.get();
-            if (a_sneaking) {
+            if (a_sneaking || IsHiddenVampire(a_actor)) {
                 FadeTo(light, 0.0f);
                 continue;
             }
@@ -86,7 +91,7 @@ namespace {
             const auto light = func(a_this, a_ref, a_node, a_forceDynamic, a_useLightRadius, a_affectRefOnly);
             if (light && a_ref) {
                 const auto actor = a_ref->As<RE::Actor>();
-                if (actor && actor->IsSneaking()) {
+                if (actor && (actor->IsSneaking() || IsHiddenVampire(actor))) {
                     light->GetLightRuntimeData().fade = 0.0f;
                 }
             }
@@ -110,7 +115,8 @@ namespace {
 }
 
 namespace SneakSpellLight {
-    void Install() {
+    void Install(bool a_vampireNoLight) {
+        vampireNoLight = a_vampireNoLight;
         auto toggleOffset = REL::VariantOffset(0x344, 0x36A, 0x0);
         if (REL::Module::IsAtLeast(SKSE::RUNTIME_SSE_1_7_104)) {
             toggleOffset = REL::VariantOffset(0x344, 0x374, 0x0);
