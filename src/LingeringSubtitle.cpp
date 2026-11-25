@@ -1,11 +1,8 @@
 #include "LingeringSubtitle.h"
 
 namespace {
-    using RemoveSubtitle_t = void(RE::SubtitleManager*, RE::TESObjectREFR*);
-    REL::Relocation<RemoveSubtitle_t> RemoveSubtitle{RELOCATION_ID(51754, 52627)};  // SubtitleManager::RemoveSubtitle
-
     void Remove(RE::SubtitleManager* a_this, RE::TESObjectREFR* a_speaker) {
-        RemoveSubtitle(a_this, a_speaker);
+        a_this->RemoveSubtitle(a_speaker);
         bool stale = false;
         {
             RE::BSSpinLockGuard locker{a_this->lock};
@@ -31,14 +28,51 @@ namespace {
         static inline REL::Relocation<decltype(thunk)> func;
     };
 
+    bool IsMidLine(const RE::Actor* a_actor) {
+        const auto& runtime = a_actor->GetActorRuntimeData();
+        return runtime.voiceTimer > 0.0f || (runtime.soundCallBackSet >= 1 && runtime.soundCallBackSet <= 3);
+    }
+
     // the high update skips actors the camera can't see, which also freezes their voice timer mid line
     struct SkipFullUpdate {
         static bool thunk(RE::Actor* a_actor) {
-            const auto& runtime = a_actor->GetActorRuntimeData();
-            if (runtime.voiceTimer > 0.0f || (runtime.soundCallBackSet >= 1 && runtime.soundCallBackSet <= 3)) {
+            if (IsMidLine(a_actor)) {
                 return false;
             }
             return func(a_actor);
+        }
+        static inline REL::Relocation<decltype(thunk)> func;
+    };
+
+    bool IsFrozenSpeaker(const RE::Actor* a_actor) {
+        if (a_actor->IsPlayerRef() || !a_actor->GetActorRuntimeData().currentProcess || a_actor->IsAIEnabled()) {
+            return false;
+        }
+        return IsMidLine(a_actor);
+    }
+
+    // an actor with ai off never gets the update that runs its voice timer, so its line and subtitle never end
+    struct SubtitleUpdate {
+        static void thunk(RE::SubtitleManager* a_this) {
+            std::vector<RE::NiPointer<RE::Actor>> speakers;
+            {
+                RE::BSSpinLockGuard locker{a_this->lock};
+                for (const auto& subtitle : a_this->subtitles) {
+                    const auto ref = subtitle.speaker.get();
+                    if (!ref) {
+                        continue;
+                    }
+                    const auto actor = ref->As<RE::Actor>();
+                    if (actor && IsFrozenSpeaker(actor) && std::ranges::find(speakers, actor, &RE::NiPointer<RE::Actor>::get) == speakers.end()) {
+                        speakers.emplace_back(actor);
+                    }
+                }
+            }
+            for (const auto& actor : speakers) {
+                actor->UpdateVoiceTimer(false);
+                actor->UpdateSoundCallBack(false);
+            }
+            func(a_this);
         }
         static inline REL::Relocation<decltype(thunk)> func;
     };
@@ -105,6 +139,12 @@ namespace LingeringSubtitle {
         SayAddSubtitle::func = say.write_call<5>(SayAddSubtitle::thunk);
         REL::Relocation<std::uintptr_t> highUpdate{RELOCATION_ID(40356, 41369), REL::VariantOffset(0x101, 0x105, 0x0)};  // ProcessLists high actor update
         SkipFullUpdate::func = highUpdate.write_call<5>(SkipFullUpdate::thunk);
+        auto subtitleOffset = REL::VariantOffset(0x4CD, 0xA1A, 0x0);
+        if (REL::Module::IsAtLeast(SKSE::RUNTIME_SSE_1_7_104)) {
+            subtitleOffset = REL::VariantOffset(0x4CD, 0xA13, 0x0);
+        }
+        REL::Relocation<std::uintptr_t> subtitleUpdate{RELOCATION_ID(39375, 40447), subtitleOffset};  // PlayerCharacter::Update
+        SubtitleUpdate::func = subtitleUpdate.write_call<5>(SubtitleUpdate::thunk);
         auto& trampoline = SKSE::GetTrampoline();
         trampoline.write_call<5>(REL::Relocation<std::uintptr_t>{RELOCATION_ID(19119, 19521), REL::VariantOffset(0xA5, 0xA5, 0x0)}.address(), Remove);    // TESObjectREFR::UpdateSoundCallBack
         trampoline.write_call<5>(REL::Relocation<std::uintptr_t>{RELOCATION_ID(19119, 19521), REL::VariantOffset(0x153, 0x153, 0x0)}.address(), Remove);  // TESObjectREFR::UpdateSoundCallBack
