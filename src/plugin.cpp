@@ -215,7 +215,7 @@ namespace {
 }
 
 SKSEPluginLoad(const SKSE::LoadInterface* skse) {
-    SKSE::Init(skse, {.trampoline = true, .trampolineSize = 210});
+    SKSE::Init(skse, {.trampoline = true, .trampolineSize = 252});
     SKSE::GetMessagingInterface()->RegisterListener(OnMessage);
     return true;
 }
